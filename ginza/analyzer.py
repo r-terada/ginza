@@ -1,10 +1,11 @@
 # coding: utf8
 import json
 import sys
+from typing import Iterable, Iterator, Optional, Tuple
 
 import spacy
 from spacy.tokens import Span
-
+from spacy.language import Language
 from spacy.lang.ja import Japanese, JapaneseTokenizer
 
 from . import set_split_mode, inflection, reading_form, ent_label_ene, ent_label_ontonotes, bunsetu_bi_label, bunsetu_position_type
@@ -14,14 +15,14 @@ from .bunsetu_recognizer import bunsetu_available, bunsetu_head_list, bunsetu_ph
 class Analyzer:
     def __init__(
         self,
-        model_path,
-        ensure_model,
-        split_mode,
-        hash_comment,
-        output_format,
-        require_gpu,
-        disable_sentencizer,
-    ):
+        model_path: str,
+        ensure_model: str,
+        split_mode: str,
+        hash_comment: str,
+        output_format: str,
+        require_gpu: bool,
+        disable_sentencizer: bool,
+    ) -> None:
         self.model_path = model_path
         self.ensure_model = ensure_model
         self.split_mode = split_mode
@@ -29,9 +30,9 @@ class Analyzer:
         self.output_format = output_format
         self.require_gpu = require_gpu
         self.disable_sentencizer = disable_sentencizer
-        self.nlp = None
+        self.nlp: Optional[Language] = None
 
-    def set_nlp(self):
+    def set_nlp(self) -> None:
         if self.nlp:
             return
 
@@ -67,15 +68,17 @@ class Analyzer:
 
         self.nlp = nlp
 
-    def analyze_lines_mp(self, lines):
+    def analyze_lines_mp(self, lines: Iterator) -> Tuple[str]:
         self.set_nlp()
         return tuple(self.analyze_line(line) for line in lines)
 
-    def analyze_line(self, line):
+    def analyze_line(self, line: str) -> str:
         return analyze(self.nlp, self.hash_comment, self.output_format, line)
 
 
-def analyze(nlp, hash_comment, output_format, line):
+def analyze(
+    nlp: Language, hash_comment: str, output_format: str, line: str
+) -> Iterable:
     line = line.rstrip("\n")
     if line.startswith("#"):
         if hash_comment == "print":
