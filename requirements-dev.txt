@@ -1,0 +1,4 @@
+pytest
+pytest-mock
+ja-ginza
+ja-ginza-electra
